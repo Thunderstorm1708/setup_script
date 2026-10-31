@@ -43,17 +43,19 @@ else
 fi
 
 # Define repositories
+# 6.12 kernel: prebuilt kernel package + the sm8450-6.6 HAL stack from the
+# LineageOS 24.0 manifest (no kernel sources, no custom display HAL).
 declare -A REPOS=(
-    ["device/nothing/Pong"]="https://github.com/Pong-Development/device_nothing_Pong.git|17"
-    ["vendor/nothing/Pong"]="https://github.com/Pong-Development/vendor_nothing_Pong.git|17"
-    ["kernel/nothing/sm8475"]="https://github.com/Pong-Development/kernel_nothing_sm8475.git|17"
-    ["kernel/nothing/sm8475-modules"]="https://github.com/Pong-Development/kernel_nothing_sm8475-modules.git|17"
-    ["kernel/nothing/sm8475-devicetrees"]="https://github.com/Pong-Development/kernel_nothing_sm8475-devicetrees.git|17"
-    ["hardware/qcom-caf/sm8450/display"]="https://github.com/Pong-Development/hardware_qcom-caf_sm8450_display.git|17"
+    ["device/nothing/Pong"]="https://github.com/Pong-Development/device_nothing_Pong.git|17-6.12"
+    ["device/nothing/Pong-kernel"]="https://github.com/Pong-Development/device_nothing_Pong-kernel.git|17"
+    ["vendor/nothing/Pong"]="https://github.com/Pong-Development/vendor_nothing_Pong.git|17-6.12"
     ["packages/apps/ParanoidGlyphPhone2"]="https://github.com/Pong-Development/packages_apps_ParanoidGlyph.git|17"
     ["packages/apps/GlyphAdapter"]="https://github.com/Pong-Development/packages_apps_GlyphAdapter.git|16"
     ["hardware/dolby"]="https://github.com/Pong-Development/hardware_dolby.git|16"
 )
+
+# The 5.10 kernel sources are not used with the prebuilt 6.12 kernel
+rm -rf kernel/nothing/sm8475 kernel/nothing/sm8475-modules kernel/nothing/sm8475-devicetrees
 
 # Function to clone a repository with error handling
 clone_repo() {
@@ -108,26 +110,14 @@ for target_dir in "${!REPOS[@]}"; do
     clone_repo "$target_dir" "${REPOS[$target_dir]}"
 done
 
-# KernelSU patch
-echo "Applying KernelSU patch..."
-cd kernel/nothing/sm8475 || exit 1
-curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v2.0.0
-cd - >/dev/null
-echo ""
-echo ""
-echo " ✅ KernelSU patch applied."
-echo ""
+# Make sure the sm8450-6.6 HAL stack from the LineageOS manifest is synced
+if [ ! -d hardware/qcom-caf/sm8450-6.6/display/hal ]; then
+    echo "hardware/qcom-caf/sm8450-6.6 is missing: run 'repo sync' on a lineage-24.0 manifest first."
+    exit 1
+fi
 
-# patch wfd
-echo "Applying patch wfd..."
-cd hardware/lineage/compat || exit 1
-git fetch https://github.com/Lunaris-Stagging/hardware_lineage_compat patch
-git cherry-pick -s 3486ff4cea891f5a5103ce407e6f86ff44dcb1e5
-cd ../../.. || exit 1
-echo ""
-echo ""
-echo " ✅ wfd patch applied."
-echo ""
+# Join the camera library that is split for GitHub
+. device/nothing/Pong/vendorsetup.sh
 
 # setup done
 echo ""

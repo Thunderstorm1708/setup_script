@@ -43,19 +43,29 @@ else
 fi
 
 # Define repositories
-# 6.12 kernel: prebuilt kernel package + the sm8450-6.6 HAL stack from the
-# LineageOS 24.0 manifest (no kernel sources, no custom display HAL).
+# 6.12 kernel built from source (inline, like 5.10) + the sm8450-6.6 HAL stack
+# from the LineageOS 24.0 manifest. No KernelSU.
 declare -A REPOS=(
-    ["device/nothing/Pong"]="https://github.com/Pong-Development/device_nothing_Pong.git|17-6.12"
-    ["device/nothing/Pong-kernel"]="https://github.com/Pong-Development/device_nothing_Pong-kernel.git|17"
-    ["vendor/nothing/Pong"]="https://github.com/Pong-Development/vendor_nothing_Pong.git|17-6.12"
+    ["device/nothing/Pong"]="https://github.com/Thunderstorm1708/device_nothing_Pong.git|17-6.12-src"
+    ["vendor/nothing/Pong"]="https://github.com/Thunderstorm1708/vendor_nothing_Pong.git|17-6.12"
+    ["kernel/nothing/sm8475"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475.git|17-6.12"
+    ["kernel/nothing/sm8475-modules"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475-modules.git|17-6.12"
+    ["kernel/nothing/sm8475-devicetrees"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475-devicetrees.git|17-6.12"
     ["packages/apps/ParanoidGlyphPhone2"]="https://github.com/Pong-Development/packages_apps_ParanoidGlyph.git|17"
     ["packages/apps/GlyphAdapter"]="https://github.com/Pong-Development/packages_apps_GlyphAdapter.git|16"
     ["hardware/dolby"]="https://github.com/Pong-Development/hardware_dolby.git|16"
 )
 
-# The 5.10 kernel sources are not used with the prebuilt 6.12 kernel
-rm -rf kernel/nothing/sm8475 kernel/nothing/sm8475-modules kernel/nothing/sm8475-devicetrees
+# The prebuilt kernel package is not used with the source build
+rm -rf device/nothing/Pong-kernel
+
+# The kernel build needs rsync and patch on the host (soc-repo staging)
+for tool in rsync patch; do
+    if ! command -v "$tool" >/dev/null; then
+        echo "❌ '$tool' is required by the kernel build: install it first."
+        exit 1
+    fi
+done
 
 # Function to clone a repository with error handling
 clone_repo() {

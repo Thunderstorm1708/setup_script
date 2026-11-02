@@ -47,7 +47,7 @@ fi
 # from the LineageOS 24.0 manifest. No KernelSU.
 declare -A REPOS=(
     ["device/nothing/Pong"]="https://github.com/Thunderstorm1708/device_nothing_Pong.git|17-6.12-src"
-    ["vendor/nothing/Pong"]="https://github.com/Thunderstorm1708/vendor_nothing_Pong.git|17-6.12"
+    ["vendor/nothing/Pong"]="https://github.com/Thunderstorm1708/vendor_nothing_Pong.git|17-6.12-redducc"
     ["kernel/nothing/sm8475"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475.git|17-6.12"
     ["kernel/nothing/sm8475-modules"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475-modules.git|17-6.12"
     ["kernel/nothing/sm8475-devicetrees"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475-devicetrees.git|17-6.12"

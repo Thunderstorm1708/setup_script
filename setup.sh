@@ -48,9 +48,9 @@ fi
 declare -A REPOS=(
     ["device/nothing/Pong"]="https://github.com/Thunderstorm1708/device_nothing_Pong.git|17-6.12-src"
     ["vendor/nothing/Pong"]="https://github.com/Thunderstorm1708/vendor_nothing_Pong.git|17-6.12-redducc"
-    ["kernel/nothing/sm8475"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475.git|17-6.12"
+    ["kernel/nothing/sm8475"]="https://github.com/Thunderstorm1708/kernel_nothing_pong.git|17-6.12"
     ["kernel/nothing/sm8475-modules"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475-modules.git|17-6.12"
-    ["kernel/nothing/sm8475-devicetrees"]="https://github.com/Thunderstorm1708/kernel_nothing_sm8475-devicetrees.git|17-6.12"
+    ["kernel/nothing/sm8475-devicetrees"]="https://github.com/Thunderstorm1708/kernel_nothing_pong-devicetree.git|17-6.12"
     ["packages/apps/ParanoidGlyphPhone2"]="https://github.com/Pong-Development/packages_apps_ParanoidGlyph.git|17"
     ["packages/apps/GlyphAdapter"]="https://github.com/Pong-Development/packages_apps_GlyphAdapter.git|16"
     ["hardware/dolby"]="https://github.com/Pong-Development/hardware_dolby.git|16"

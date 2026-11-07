@@ -151,9 +151,20 @@ echo "Applying the Pong display HAL patches to $HAL_DIR..."
 # git am needs a committer; use the user's git identity when there is one
 GIT_ID=()
 git -C "$HAL_DIR" config user.email >/dev/null || GIT_ID=(-c user.name="Pong setup" -c user.email="pong-setup@localhost")
+# The whole series is already there when it can be reverted, newest first, in
+# a scratch index (also right for a HAL with shallow or rewritten history)
+SERIES_IN=0
+IDX=$(mktemp -u)
+if GIT_INDEX_FILE=$IDX git -C "$HAL_DIR" read-tree HEAD 2>/dev/null; then
+    SERIES_IN=1
+    for ((i=${#HAL_PATCHES[@]}-1; i>=0; i--)); do
+        GIT_INDEX_FILE=$IDX git -C "$HAL_DIR" apply --cached --reverse "$PATCH_DIR/${HAL_PATCHES[$i]}" 2>/dev/null || { SERIES_IN=0; break; }
+    done
+fi
+rm -f "$IDX"
 for p in "${HAL_PATCHES[@]}"; do
     subject=$(sed -n 's/^Subject: \[PATCH[^]]*\] //p' "$PATCH_DIR/$p" | head -n 1)
-    if git -C "$HAL_DIR" log -n 300 --format=%s | grep -qF -- "$subject"; then
+    if [ "$SERIES_IN" = 1 ] || git -C "$HAL_DIR" log -n 300 --format=%s | grep -qF -- "$subject"; then
         echo "   already applied: $subject"
     elif git "${GIT_ID[@]}" -C "$HAL_DIR" am -q --3way "$PATCH_DIR/$p"; then
         echo "   ✅ applied: $subject"

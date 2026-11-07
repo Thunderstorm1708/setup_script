@@ -54,6 +54,9 @@ declare -A REPOS=(
     ["packages/apps/ParanoidGlyphPhone2"]="https://github.com/Pong-Development/packages_apps_ParanoidGlyph.git|17"
     ["packages/apps/GlyphAdapter"]="https://github.com/Pong-Development/packages_apps_GlyphAdapter.git|16"
     ["hardware/dolby"]="https://github.com/Pong-Development/hardware_dolby.git|16"
+    # LineageOS lineage-24.0-caf-sm8450-6.6 display HAL with the Pong UDFPS
+    # and gralloc fixes on top (replaces the one from the ROM manifest)
+    ["hardware/qcom-caf/sm8450-6.6/display/hal"]="https://github.com/Thunderstorm1708/android_hardware_qcom_display.git|17-6.12"
 )
 
 # The prebuilt kernel package is not used with the source build
@@ -115,16 +118,17 @@ else
     echo ""
 fi
 
+# Make sure the sm8450-6.6 HAL stack from the LineageOS manifest is synced
+# (the display HAL itself is replaced below, the rest comes from the ROM)
+if [ ! -d hardware/qcom-caf/sm8450-6.6/display/core ]; then
+    echo "hardware/qcom-caf/sm8450-6.6 is missing: run 'repo sync' on a lineage-24.0 manifest first."
+    exit 1
+fi
+
 # Clone repositories
 for target_dir in "${!REPOS[@]}"; do
     clone_repo "$target_dir" "${REPOS[$target_dir]}"
 done
-
-# Make sure the sm8450-6.6 HAL stack from the LineageOS manifest is synced
-if [ ! -d hardware/qcom-caf/sm8450-6.6/display/hal ]; then
-    echo "hardware/qcom-caf/sm8450-6.6 is missing: run 'repo sync' on a lineage-24.0 manifest first."
-    exit 1
-fi
 
 # Join the camera library that is split for GitHub
 . device/nothing/Pong/vendorsetup.sh

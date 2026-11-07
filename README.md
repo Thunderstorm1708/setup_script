@@ -16,7 +16,7 @@ Welcome to the **Custom ROM Cloning Script** repository! This script simplifies 
 To get started, run the following command in your terminal:
 
 ```bash
-wget https://raw.githubusercontent.com/Pong-Development/setup_script/refs/heads/main/setup.sh && bash setup.sh
+wget https://raw.githubusercontent.com/Thunderstorm1708/setup_script/refs/heads/17-6.12-src/setup.sh && bash setup.sh
 ```
 
 ### Prerequisites
@@ -35,19 +35,19 @@ wget https://raw.githubusercontent.com/Pong-Development/setup_script/refs/heads/
 
 Here are the repositories the script clones:
 
-- **Device Tree**: [device\_nothing\_Pong](https://github.com/Pong-Development/device_nothing_Pong)
-- **Vendor Tree**: [vendor\_nothing\_Pong](https://github.com/Pong-Development/vendor_nothing_Pong)
-- **Kernel Tree**:
-  - [kernel\_nothing\_sm8475](https://github.com/Pong-Development/kernel_nothing_sm8475)
-  - [kernel\_nothing\_sm8475-modules](https://github.com/Pong-Development/kernel_nothing_sm8475-modules)
-  - [kernel\_nothing\_sm8475-devicetrees](https://github.com/Pong-Development/kernel_nothing_sm8475-devicetrees)
-- **Display HAL**: [hardware\_qcom-caf\_sm8450\_display](https://github.com/Pong-Development/hardware_qcom-caf_sm8450_display)
-- **Audio HAL**:
-  - [hardware\_qcom\_audio-ar](https://github.com/Pong-Development/hardware_qcom_audio-ar)
-  - [vendor\_qcom\_opensource\_arpal-lx](https://github.com/Pong-Development/vendor_qcom_opensource_arpal-lx)
-- **Sepolicy**: [device\_qcom\_sepolicy\_vndr](https://github.com/Pong-Development/device_qcom_sepolicy_vndr)
+- **Device Tree**: [device\_nothing\_Pong](https://github.com/Thunderstorm1708/device_nothing_Pong) (`17-6.12-src`)
+- **Vendor Tree**: [vendor\_nothing\_Pong](https://github.com/Thunderstorm1708/vendor_nothing_Pong) (`17-6.12-redducc`)
+- **Kernel Tree** (6.12, built from source):
+  - [kernel\_nothing\_pong](https://github.com/Thunderstorm1708/kernel_nothing_pong) (`17-6.12`, full ACK history)
+  - [kernel\_nothing\_sm8475-modules](https://github.com/Thunderstorm1708/kernel_nothing_sm8475-modules) (`17-6.12`)
+  - [kernel\_nothing\_pong-devicetree](https://github.com/Thunderstorm1708/kernel_nothing_pong-devicetree) (`17-6.12`)
+- **Display HAL**: [android\_hardware\_qcom\_display](https://github.com/Thunderstorm1708/android_hardware_qcom_display) (`17-6.12`, LineageOS `lineage-24.0-caf-sm8450-6.6` with the Pong fixes), cloned to `hardware/qcom-caf/sm8450-6.6/display/hal`
 - **Paranoid Glyph**: [packages\_apps\_ParanoidGlyph](https://github.com/Pong-Development/packages_apps_ParanoidGlyph)
+- **Glyph Adapter**: [packages\_apps\_GlyphAdapter](https://github.com/Pong-Development/packages_apps_GlyphAdapter)
 - **Dolby**: [hardware\_dolby](https://github.com/Pong-Development/hardware_dolby)
+
+The rest of the sm8450-6.6 HAL stack (audio, media, display core/intf, ...)
+comes from the ROM's lineage-24.0 based manifest: run `repo sync` first.
 
 ## Notes
 

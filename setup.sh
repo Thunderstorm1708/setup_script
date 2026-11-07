@@ -54,9 +54,6 @@ declare -A REPOS=(
     ["packages/apps/ParanoidGlyphPhone2"]="https://github.com/Pong-Development/packages_apps_ParanoidGlyph.git|17"
     ["packages/apps/GlyphAdapter"]="https://github.com/Pong-Development/packages_apps_GlyphAdapter.git|16"
     ["hardware/dolby"]="https://github.com/Pong-Development/hardware_dolby.git|16"
-    # LineageOS lineage-24.0-caf-sm8450-6.6 display HAL with the Pong UDFPS
-    # and gralloc fixes on top (replaces the one from the ROM manifest)
-    ["hardware/qcom-caf/sm8450-6.6/display/hal"]="https://github.com/Thunderstorm1708/android_hardware_qcom_display.git|17-6.12"
 )
 
 # The prebuilt kernel package is not used with the source build
@@ -119,8 +116,7 @@ else
 fi
 
 # Make sure the sm8450-6.6 HAL stack from the LineageOS manifest is synced
-# (the display HAL itself is replaced below, the rest comes from the ROM)
-if [ ! -d hardware/qcom-caf/sm8450-6.6/display/core ]; then
+if [ ! -d hardware/qcom-caf/sm8450-6.6/display/hal ]; then
     echo "hardware/qcom-caf/sm8450-6.6 is missing: run 'repo sync' on a lineage-24.0 manifest first."
     exit 1
 fi
@@ -129,6 +125,45 @@ fi
 for target_dir in "${!REPOS[@]}"; do
     clone_repo "$target_dir" "${REPOS[$target_dir]}"
 done
+
+# Pong fixes on top of the ROM's own display HAL (from repo sync). The same
+# commits are on branch 17-6.12 of Thunderstorm1708/android_hardware_qcom_display.
+HAL_DIR=hardware/qcom-caf/sm8450-6.6/display/hal
+HAL_PATCHES=(
+    0001-gralloc-Tolerate-unimported-and-stale-handles-in-Sna.patch
+    0002-sdm-mark-FOD-pressed-layer-by-setting-a-bit-on-ZPOS.patch
+    0003-sdm-udfps-Always-strip-the-FOD-bit-from-the-z-order.patch
+)
+HAL_PATCH_URL="https://raw.githubusercontent.com/Thunderstorm1708/setup_script/refs/heads/17-6.12-src/patches/display-hal"
+PATCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/patches/display-hal"
+if [ ! -f "$PATCH_DIR/${HAL_PATCHES[0]}" ]; then
+    # setup.sh was downloaded on its own: fetch the patches too
+    PATCH_DIR=$(mktemp -d)
+    for p in "${HAL_PATCHES[@]}"; do
+        if ! curl -fsSL "$HAL_PATCH_URL/$p" -o "$PATCH_DIR/$p"; then
+            echo "❌ Could not download $p"
+            exit 1
+        fi
+    done
+fi
+
+echo "Applying the Pong display HAL patches to $HAL_DIR..."
+# git am needs a committer; use the user's git identity when there is one
+GIT_ID=()
+git -C "$HAL_DIR" config user.email >/dev/null || GIT_ID=(-c user.name="Pong setup" -c user.email="pong-setup@localhost")
+for p in "${HAL_PATCHES[@]}"; do
+    subject=$(sed -n 's/^Subject: \[PATCH[^]]*\] //p' "$PATCH_DIR/$p" | head -n 1)
+    if git -C "$HAL_DIR" log -n 300 --format=%s | grep -qF -- "$subject"; then
+        echo "   already applied: $subject"
+    elif git "${GIT_ID[@]}" -C "$HAL_DIR" am -q --3way "$PATCH_DIR/$p"; then
+        echo "   ✅ applied: $subject"
+    else
+        git -C "$HAL_DIR" am --abort 2>/dev/null
+        echo "❌ $p does not apply to this ROM's display HAL: apply it by hand."
+        exit 1
+    fi
+done
+echo ""
 
 # Join the camera library that is split for GitHub
 . device/nothing/Pong/vendorsetup.sh

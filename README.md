@@ -41,7 +41,7 @@ Here are the repositories the script clones:
   - [kernel\_nothing\_pong](https://github.com/Thunderstorm1708/kernel_nothing_pong) (`17-6.12`, full ACK history)
   - [kernel\_nothing\_sm8475-modules](https://github.com/Thunderstorm1708/kernel_nothing_sm8475-modules) (`17-6.12`)
   - [kernel\_nothing\_pong-devicetree](https://github.com/Thunderstorm1708/kernel_nothing_pong-devicetree) (`17-6.12`)
-- **Display HAL**: [android\_hardware\_qcom\_display](https://github.com/Thunderstorm1708/android_hardware_qcom_display) (`17-6.12`, LineageOS `lineage-24.0-caf-sm8450-6.6` with the Pong fixes), cloned to `hardware/qcom-caf/sm8450-6.6/display/hal`
+- **Display HAL**: the ROM's own `hardware/qcom-caf/sm8450-6.6/display/hal` with the Pong UDFPS and gralloc fixes applied from [`patches/display-hal`](patches/display-hal) (the same commits are on branch `17-6.12` of [android\_hardware\_qcom\_display](https://github.com/Thunderstorm1708/android_hardware_qcom_display/tree/17-6.12))
 - **Paranoid Glyph**: [packages\_apps\_ParanoidGlyph](https://github.com/Pong-Development/packages_apps_ParanoidGlyph)
 - **Glyph Adapter**: [packages\_apps\_GlyphAdapter](https://github.com/Pong-Development/packages_apps_GlyphAdapter)
 - **Dolby**: [hardware\_dolby](https://github.com/Pong-Development/hardware_dolby)

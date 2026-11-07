@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thunderstorm1708 <89205550+Thunderstorm1708@users.noreply.github.com>
+Date: Fri, 6 Nov 2026 00:49:04 +0530
+Subject: [PATCH 3/3] sdm: udfps: Always strip the FOD bit from the z order
+
+The FOD pressed bit was only removed from the z order when the pressed
+state changed, so on later SetLayerZOrder calls the bit stayed in z_.
+Strip it every time.
+---
+ composer/hwc_layers.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/composer/hwc_layers.cpp b/composer/hwc_layers.cpp
+index e32276f..fb6545e 100644
+--- a/composer/hwc_layers.cpp
++++ b/composer/hwc_layers.cpp
+@@ -711,9 +711,9 @@ HWC3::Error HWCLayer::SetLayerZOrder(uint32_t z) {
+   bool fod_pressed = z & FOD_PRESSED_LAYER_ZORDER;
+   if (fod_pressed_ != fod_pressed) {
+     fod_pressed_ = fod_pressed;
+-    z &= ~FOD_PRESSED_LAYER_ZORDER;
+     geometry_changes_ |= kZOrder;
+   }
++  z &= ~FOD_PRESSED_LAYER_ZORDER;
+ #endif
+ 
+   if (z_ != z) {
+-- 
+2.43.0
+

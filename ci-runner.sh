@@ -32,7 +32,8 @@ for tool in curl tar git; do
 done
 
 # The runner refuses to start unless every directory above it is readable.
-# Shared servers often lock /home, so fall back to /tmp/runner-$USER.
+# Shared servers often lock /home, so fall back to /tmp/runner-$USER-<uid> (the uid keeps it apart from
+# a folder left by an older account with the same name).
 readable_path() {
     d="$1"
     while [ "$d" != "/" ]; do
@@ -41,7 +42,7 @@ readable_path() {
     done
 }
 if [ -z "$RUNNER_DIR" ] && ! readable_path "$DIR"; then
-    DIR="/tmp/runner-$(id -un)"
+    DIR="/tmp/runner-$(id -un)-$(id -u)"
     echo "$HOME is inside a locked directory; installing the runner in $DIR instead."
 fi
 

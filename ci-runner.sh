@@ -5,6 +5,7 @@
 # tasks pushed to that repository run on this machine.
 #
 # usage: bash ci-runner.sh <registration-token>
+#   (set RUNNER_DIR=/some/dir to choose where the runner is installed)
 #   The token comes from GitHub: pong-rom-ci -> Settings -> Actions ->
 #   Runners -> New self-hosted runner (the --token value). It is valid for
 #   one hour and is only used once, to register.
@@ -13,7 +14,7 @@ set -e
 
 TOKEN="$1"
 REPO_URL=https://github.com/Thunderstorm1708/pong-rom-ci
-DIR="$HOME/actions-runner"
+DIR="${RUNNER_DIR:-$HOME/actions-runner}"
 
 if [ -z "$TOKEN" ]; then
     echo "usage: bash ci-runner.sh <registration-token>"
@@ -29,6 +30,20 @@ esac
 for tool in curl tar git; do
     command -v "$tool" >/dev/null || { echo "'$tool' is needed: install it first"; exit 1; }
 done
+
+# The runner refuses to start unless every directory above it is readable.
+# Shared servers often lock /home, so fall back to /tmp/runner-$USER.
+readable_path() {
+    d="$1"
+    while [ "$d" != "/" ]; do
+        d=$(dirname "$d")
+        ls "$d" >/dev/null 2>&1 || return 1
+    done
+}
+if [ -z "$RUNNER_DIR" ] && ! readable_path "$DIR"; then
+    DIR="/tmp/runner-$(id -un)"
+    echo "$HOME is inside a locked directory; installing the runner in $DIR instead."
+fi
 
 mkdir -p "$DIR"
 cd "$DIR"

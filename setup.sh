@@ -133,6 +133,9 @@ HAL_PATCHES=(
     0001-gralloc-Tolerate-unimported-and-stale-handles-in-Sna.patch
     0002-sdm-mark-FOD-pressed-layer-by-setting-a-bit-on-ZPOS.patch
     0003-sdm-udfps-Always-strip-the-FOD-bit-from-the-z-order.patch
+    0004-sdm-Accept-SDE-plans-that-only-fail-the-performance-.patch
+    0005-composer-udfps-Crop-the-illumination-layer-to-the-se.patch
+    0006-sdm-udfps-Flag-the-GPU-target-when-the-dot-is-compos.patch
 )
 HAL_PATCH_URL="https://raw.githubusercontent.com/Thunderstorm1708/setup_script/refs/heads/17-6.12-src/patches/display-hal"
 PATCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/patches/display-hal"

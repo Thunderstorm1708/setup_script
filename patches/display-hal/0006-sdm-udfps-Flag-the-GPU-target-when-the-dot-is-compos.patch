@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thunderstorm1708 <89205550+Thunderstorm1708@users.noreply.github.com>
+Date: Wed, 11 Nov 2026 12:38:37 +0530
+Subject: [PATCH 6/6] sdm: udfps: Flag the GPU target when the dot is composed
+ into it
+
+When the UDFPS dot layer is composed by the GPU, the kernel only sees
+the client target and cannot tell whether the dot is in it, so it
+either cuts an empty hole into the dim layer or none at all.
+
+Mark the GPU target with fod_pressed in that case and send it with
+FOD_IN_CLIENT_TARGET_ZORDER (0x10000000) instead of
+FOD_PRESSED_LAYER_ZORDER, so the kernel cuts the hole around the
+sensor only when the dot is really there.
+---
+ sdm/libs/core/comp_manager.cpp | 19 +++++++++++++++++++
+ sdm/libs/dal/hw_device_drm.cpp | 10 +++++++++-
+ 2 files changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/sdm/libs/core/comp_manager.cpp b/sdm/libs/core/comp_manager.cpp
+index 9725d1d..9640b95 100755
+--- a/sdm/libs/core/comp_manager.cpp
++++ b/sdm/libs/core/comp_manager.cpp
+@@ -455,6 +455,25 @@ DisplayError CompManager::Prepare(Handle display_ctx, DispLayerStack *disp_layer
+     }
+   }
+ 
++#ifdef UDFPS_ZPOS
++  // When the UDFPS dot layer ended up in the GPU target, mark the GPU target so the
++  // kernel knows the dot is inside it and keeps the sensor area undimmed for it.
++  if (error == kErrorNone) {
++    bool fod_in_target = false;
++    for (uint32_t i = 0; i < disp_layer_stack->info.app_layer_count; i++) {
++      Layer *layer = disp_layer_stack->stack->layers.at(i);
++      if (layer->flags.fod_pressed && layer->composition == kCompositionGPU) {
++        fod_in_target = true;
++        break;
++      }
++    }
++    for (auto &hw_layer : disp_layer_stack->info.hw_layers) {
++      if (hw_layer.composition == kCompositionGPUTarget)
++        hw_layer.flags.fod_pressed = fod_in_target;
++    }
++  }
++#endif
++
+   if (error != kErrorNone) {
+     resource_intf_->Stop(display_resource_ctx, disp_layer_stack);
+     DLOGE("Composition strategies exhausted for display = %d-%d. (first frame = %s)",
+diff --git a/sdm/libs/dal/hw_device_drm.cpp b/sdm/libs/dal/hw_device_drm.cpp
+index e15305d..7a9e832 100644
+--- a/sdm/libs/dal/hw_device_drm.cpp
++++ b/sdm/libs/dal/hw_device_drm.cpp
+@@ -109,6 +109,12 @@
+ #include <display/drm/sde_drm.h>
+ #endif
+ 
++#ifdef UDFPS_ZPOS
++#ifndef FOD_IN_CLIENT_TARGET_ZORDER
++#define FOD_IN_CLIENT_TARGET_ZORDER 0x10000000u
++#endif
++#endif
++
+ #define __CLASS__ "HWDeviceDRM"
+ 
+ #ifndef DRM_FORMAT_MOD_QCOM_COMPRESSED
+@@ -1515,7 +1521,9 @@ void HWDeviceDRM::SetupAtomic(Fence::ScopedRef &scoped_ref, HWLayersInfo *hw_lay
+ #ifdef UDFPS_ZPOS
+           uint32_t z_order = pipe_info->z_order;
+           if (layer.flags.fod_pressed) {
+-            z_order |= FOD_PRESSED_LAYER_ZORDER;
++            // The GPU target only carries the flag when the UDFPS dot was composed into it
++            z_order |= (layer.composition == kCompositionGPUTarget) ?
++                           FOD_IN_CLIENT_TARGET_ZORDER : FOD_PRESSED_LAYER_ZORDER;
+           }
+           drm_atomic_intf_->Perform(DRMOps::PLANE_SET_ZORDER, pipe_id, z_order);
+ #else
+-- 
+2.43.0
+
